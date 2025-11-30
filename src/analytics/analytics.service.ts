@@ -20,6 +20,10 @@ export class AnalyticsService {
       where: { createdAt: MoreThanOrEqual(since) },
     });
 
+    const loginCount = await this.userRepository.count({
+      where: { lastLoginAt: MoreThanOrEqual(since) },
+    });
+
     const chatCount = await this.chatRepository.count({
       where: { createdAt: MoreThanOrEqual(since) },
     });
@@ -30,7 +34,7 @@ export class AnalyticsService {
         to: new Date(),
       },
       signupCount,
-      loginCount: null,
+      loginCount,
       chatCount,
     };
   }
