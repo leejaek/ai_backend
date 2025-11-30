@@ -3,3 +3,6 @@ export * from './interfaces/ai-service.interface';
 export * from './providers/openai.provider';
 export * from './providers/claude.provider';
 export * from './providers/mock-ai.provider';
+export * from './exceptions/ai.exception';
+export * from './utils/error-transformer';
+export * from './filters/ai-exception.filter';

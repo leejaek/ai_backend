@@ -29,4 +29,27 @@ export const envValidationSchema = Joi.object({
     'any.required': 'JWT_SECRET 환경 변수가 필요합니다.',
   }),
   JWT_EXPIRES_IN: Joi.string().default('1h'),
+
+  // AI Provider 설정
+  AI_PROVIDER: Joi.string()
+    .valid('openai', 'claude', 'mock')
+    .default('openai'),
+
+  // OpenAI 설정 (AI_PROVIDER가 openai일 때 필수)
+  OPENAI_API_KEY: Joi.string().when('AI_PROVIDER', {
+    is: 'openai',
+    then: Joi.required().messages({
+      'any.required':
+        'AI_PROVIDER가 openai일 때 OPENAI_API_KEY가 필요합니다.',
+    }),
+    otherwise: Joi.optional(),
+  }),
+  OPENAI_MODEL: Joi.string().optional(),
+
+  // Claude 설정 (추후 확장용 - 현재는 optional)
+  ANTHROPIC_API_KEY: Joi.string().optional(),
+  ANTHROPIC_MODEL: Joi.string().optional(),
+
+  // Thread 설정
+  THREAD_TIMEOUT_MINUTES: Joi.number().default(30),
 });
