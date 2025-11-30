@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -21,6 +22,12 @@ import { ThreadsModule } from './threads/threads.module';
         configService.get<TypeOrmModuleOptions>('database')!,
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1분 (밀리초)
+        limit: 30, // 30회
+      },
+    ]),
     AuthModule,
     ChatsModule,
     ThreadsModule,
