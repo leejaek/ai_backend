@@ -27,7 +27,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const { password, ...result } = user;
+    const { password, id, ...result } = user;
     return result;
   }
 
@@ -45,16 +45,12 @@ export class AuthService {
       throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
     return {
-      accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+      data: {
+        accessToken,
       },
     };
   }
