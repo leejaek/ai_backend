@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -6,10 +6,12 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 import { FeedbacksService } from './feedbacks.service';
-import { CreateFeedbackDto } from './dto/create-feedback.dto';
-import { User } from '../users/entities/user.entity';
+import { CreateFeedbackDto, GetFeedbacksDto } from './dto';
+import { User, UserRole } from '../users/entities/user.entity';
 
 @ApiTags('feedbacks')
 @ApiBearerAuth()
@@ -17,6 +19,26 @@ import { User } from '../users/entities/user.entity';
 @Controller('feedbacks')
 export class FeedbacksController {
   constructor(private feedbacksService: FeedbacksService) {}
+
+  @Get()
+  @ApiOperation({ summary: '내 피드백 목록 조회' })
+  @ApiResponse({ status: 200, description: '피드백 목록 반환' })
+  async findMyFeedbacks(
+    @CurrentUser() user: User,
+    @Query() dto: GetFeedbacksDto,
+  ) {
+    return this.feedbacksService.findByUserIdPaginated(user.id, dto);
+  }
+
+  @Get('all')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: '전체 피드백 목록 조회 (관리자)' })
+  @ApiResponse({ status: 200, description: '전체 피드백 목록 반환' })
+  @ApiResponse({ status: 403, description: '권한 없음' })
+  async findAllFeedbacks(@Query() dto: GetFeedbacksDto) {
+    return this.feedbacksService.findAllPaginated(dto);
+  }
 
   @Post()
   @ApiOperation({ summary: '피드백 생성' })

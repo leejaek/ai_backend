@@ -5,9 +5,13 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
+import {
+  PaginationMeta,
+  SortOrder,
+} from '../common/dto/pagination.dto';
 import { Feedback } from './entities/feedback.entity';
-import { CreateFeedbackDto } from './dto/create-feedback.dto';
+import { CreateFeedbackDto, GetFeedbacksDto } from './dto';
 import { ChatsService } from '../chats/chats.service';
 import { ThreadsService } from '../threads/threads.service';
 import { UserRole } from '../users/entities/user.entity';
@@ -58,5 +62,63 @@ export class FeedbacksService {
     });
 
     return this.feedbacksRepository.save(feedback);
+  }
+
+  async findByUserIdPaginated(
+    userId: string,
+    dto: GetFeedbacksDto,
+  ): Promise<{ data: Feedback[]; meta: PaginationMeta }> {
+    const { page = 1, limit = 20, sort = SortOrder.DESC, isPositive } = dto;
+    const skip = (page - 1) * limit;
+
+    const where: FindOptionsWhere<Feedback> = { userId };
+    if (isPositive !== undefined) {
+      where.isPositive = isPositive;
+    }
+
+    const [data, total] = await this.feedbacksRepository.findAndCount({
+      where,
+      order: { createdAt: sort.toUpperCase() as 'ASC' | 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data,
+      meta: new PaginationMeta(page, limit, total),
+    };
+  }
+
+  async findAllPaginated(
+    dto: GetFeedbacksDto,
+  ): Promise<{ data: Feedback[]; meta: PaginationMeta }> {
+    const {
+      page = 1,
+      limit = 20,
+      sort = SortOrder.DESC,
+      isPositive,
+      userId,
+    } = dto;
+    const skip = (page - 1) * limit;
+
+    const where: FindOptionsWhere<Feedback> = {};
+    if (isPositive !== undefined) {
+      where.isPositive = isPositive;
+    }
+    if (userId) {
+      where.userId = userId;
+    }
+
+    const [data, total] = await this.feedbacksRepository.findAndCount({
+      where,
+      order: { createdAt: sort.toUpperCase() as 'ASC' | 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data,
+      meta: new PaginationMeta(page, limit, total),
+    };
   }
 }
