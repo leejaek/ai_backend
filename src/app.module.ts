@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { WinstonModule } from 'nest-winston';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatsModule } from './chats/chats.module';
 import databaseConfig from './config/database.config';
 import { envValidationSchema } from './config/env.validation';
 import jwtConfig from './config/jwt.config';
+import { winstonConfig } from './config/winston.config';
 import { FeedbacksModule } from './feedbacks/feedbacks.module';
 import { ThreadsModule } from './threads/threads.module';
 
@@ -30,6 +32,7 @@ import { ThreadsModule } from './threads/threads.module';
         limit: 30, // 30회
       },
     ]),
+    WinstonModule.forRoot(winstonConfig()),
     AnalyticsModule,
     AuthModule,
     ChatsModule,
