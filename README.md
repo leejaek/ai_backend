@@ -49,7 +49,19 @@ NestJS 기반 AI 채팅 백엔드 API 서버
 - Swagger API 문서
 - Jest (테스트)
 
-## 설치
+## 빠른 시작 (Docker)
+
+```bash
+# 저장소 클론 후 바로 실행
+git clone <repository-url>
+cd ai_backend
+cp .env.example .env
+docker-compose up
+```
+
+기본 설정은 `AI_PROVIDER=mock`이므로 API 키 없이 바로 테스트할 수 있습니다.
+
+## 설치 (로컬)
 
 ```bash
 npm install
