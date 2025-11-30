@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
 import {
@@ -10,12 +11,18 @@ import { Thread } from './entities/thread.entity';
 
 @Injectable()
 export class ThreadsService {
-  private readonly SESSION_TIMEOUT_MINUTES = 30;
+  private readonly sessionTimeoutMinutes: number;
 
   constructor(
     @InjectRepository(Thread)
     private threadsRepository: Repository<Thread>,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.sessionTimeoutMinutes = this.configService.get<number>(
+      'THREAD_TIMEOUT_MINUTES',
+      30,
+    );
+  }
 
   async create(userId: string): Promise<Thread> {
     const thread = this.threadsRepository.create({ userId });
@@ -46,7 +53,7 @@ export class ThreadsService {
 
   async findActiveThreadByUserId(userId: string): Promise<Thread | null> {
     const timeoutThreshold = new Date(
-      Date.now() - this.SESSION_TIMEOUT_MINUTES * 60 * 1000,
+      Date.now() - this.sessionTimeoutMinutes * 60 * 1000,
     );
 
     return this.threadsRepository.findOne({
