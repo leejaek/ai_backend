@@ -12,9 +12,13 @@ export interface ChatCompletionOptions {
 export interface ChatCompletionResponse {
   content: string;
   finishReason: string | null;
+  provider: string;
+  model: string;
 }
 
-export interface IOpenAIService {
+export interface IAIService {
+  readonly providerName: string;
+
   chatCompletion(
     messages: ChatMessage[],
     options?: ChatCompletionOptions,
@@ -26,4 +30,4 @@ export interface IOpenAIService {
   ): AsyncGenerator<string, void, unknown>;
 }
 
-export const OPENAI_SERVICE = Symbol('OPENAI_SERVICE');
+export const AI_SERVICE = Symbol('AI_SERVICE');

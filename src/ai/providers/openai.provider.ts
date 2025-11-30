@@ -5,11 +5,12 @@ import {
   ChatCompletionOptions,
   ChatCompletionResponse,
   ChatMessage,
-  IOpenAIService,
-} from '../interfaces/openai-service.interface';
+  IAIService,
+} from '../interfaces/ai-service.interface';
 
 @Injectable()
-export class OpenAIProvider implements IOpenAIService {
+export class OpenAIProvider implements IAIService {
+  readonly providerName = 'openai';
   private readonly client: OpenAI;
   private readonly defaultModel: string;
 
@@ -25,8 +26,9 @@ export class OpenAIProvider implements IOpenAIService {
     messages: ChatMessage[],
     options?: ChatCompletionOptions,
   ): Promise<ChatCompletionResponse> {
+    const model = options?.model || this.defaultModel;
     const response = await this.client.chat.completions.create({
-      model: options?.model || this.defaultModel,
+      model,
       messages: messages.map((msg) => ({
         role: msg.role,
         content: msg.content,
@@ -39,6 +41,8 @@ export class OpenAIProvider implements IOpenAIService {
     return {
       content: choice.message.content || '',
       finishReason: choice.finish_reason,
+      provider: this.providerName,
+      model,
     };
   }
 

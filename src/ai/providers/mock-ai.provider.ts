@@ -3,13 +3,15 @@ import {
   ChatCompletionOptions,
   ChatCompletionResponse,
   ChatMessage,
-  IOpenAIService,
-} from '../interfaces/openai-service.interface';
+  IAIService,
+} from '../interfaces/ai-service.interface';
 
 @Injectable()
-export class MockOpenAIProvider implements IOpenAIService {
+export class MockAIProvider implements IAIService {
+  readonly providerName = 'mock';
   private mockResponse: string = '이것은 Mock 응답입니다.';
   private mockDelay: number = 100;
+  private mockModel: string = 'mock-model';
 
   setMockResponse(response: string): void {
     this.mockResponse = response;
@@ -17,6 +19,10 @@ export class MockOpenAIProvider implements IOpenAIService {
 
   setMockDelay(delay: number): void {
     this.mockDelay = delay;
+  }
+
+  setMockModel(model: string): void {
+    this.mockModel = model;
   }
 
   async chatCompletion(
@@ -32,6 +38,8 @@ export class MockOpenAIProvider implements IOpenAIService {
     return {
       content: `[Mock] ${this.mockResponse} (질문: ${lastUserMessage || 'N/A'})`,
       finishReason: 'stop',
+      provider: this.providerName,
+      model: options?.model || this.mockModel,
     };
   }
 
