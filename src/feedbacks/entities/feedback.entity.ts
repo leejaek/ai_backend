@@ -18,9 +18,9 @@ export enum FeedbackStatus {
 
 @Entity('feedbacks')
 @Unique(['userId', 'chatId'])
+@Index(['userId', 'createdAt'])
 @Index(['createdAt'])
 @Index(['status'])
-@Index(['isPositive'])
 export class Feedback {
   @PrimaryGeneratedColumn('uuid')
   id: string;

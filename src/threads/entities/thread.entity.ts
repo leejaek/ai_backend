@@ -13,7 +13,6 @@ import { User } from '../../users/entities/user.entity';
 import { Chat } from '../../chats/entities/chat.entity';
 
 @Entity('threads')
-@Index(['userId', 'updatedAt'])
 @Index(['userId', 'createdAt'])
 export class Thread {
   @PrimaryGeneratedColumn('uuid')
