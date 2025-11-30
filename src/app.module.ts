@@ -4,6 +4,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { ChatsModule } from './chats/chats.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 
@@ -20,6 +21,7 @@ import jwtConfig from './config/jwt.config';
       inject: [ConfigService],
     }),
     AuthModule,
+    ChatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
