@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   NotFoundException,
@@ -65,5 +66,25 @@ export class ThreadsController {
     }
 
     return thread;
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '스레드 삭제' })
+  @ApiResponse({ status: 200, description: '삭제 성공' })
+  @ApiResponse({ status: 403, description: '삭제 권한 없음' })
+  @ApiResponse({ status: 404, description: '스레드를 찾을 수 없음' })
+  async remove(@CurrentUser() user: User, @Param('id') id: string) {
+    const thread = await this.threadsService.findById(id);
+
+    if (!thread) {
+      throw new NotFoundException('스레드를 찾을 수 없습니다.');
+    }
+
+    if (thread.userId !== user.id) {
+      throw new ForbiddenException('삭제 권한이 없습니다.');
+    }
+
+    await this.threadsService.delete(id);
+    return { message: '스레드가 삭제되었습니다.' };
   }
 }
