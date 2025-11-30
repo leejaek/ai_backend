@@ -1,10 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiProduces,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -25,5 +27,19 @@ export class AnalyticsController {
   @ApiResponse({ status: 403, description: '관리자 권한 필요' })
   async getActivityReport() {
     return this.analyticsService.getActivityReport();
+  }
+
+  @Get('chat-report')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: '대화 보고서 CSV 다운로드 (관리자)' })
+  @ApiProduces('text/csv')
+  @ApiResponse({ status: 200, description: 'CSV 파일 반환' })
+  @ApiResponse({ status: 403, description: '관리자 권한 필요' })
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="chat-report.csv"')
+  async getChatReportCsv(@Res() res: Response) {
+    const csv = await this.analyticsService.generateChatReportCsv();
+    const bom = '\uFEFF';
+    res.send(bom + csv);
   }
 }

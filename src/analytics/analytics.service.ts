@@ -38,4 +38,51 @@ export class AnalyticsService {
       chatCount,
     };
   }
+
+  async generateChatReportCsv(): Promise<string> {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const chats = await this.chatRepository
+      .createQueryBuilder('chat')
+      .leftJoinAndSelect('chat.thread', 'thread')
+      .leftJoinAndSelect('thread.user', 'user')
+      .where('chat.createdAt >= :since', { since })
+      .orderBy('chat.createdAt', 'DESC')
+      .getMany();
+
+    const headers = [
+      'chat_id',
+      'thread_id',
+      'user_id',
+      'user_email',
+      'user_name',
+      'question',
+      'answer',
+      'created_at',
+    ];
+
+    const rows = chats.map((chat) => [
+      chat.id,
+      chat.threadId,
+      chat.thread?.userId || '',
+      chat.thread?.user?.email || '',
+      chat.thread?.user?.name || '',
+      this.escapeCsvField(chat.question),
+      this.escapeCsvField(chat.answer),
+      chat.createdAt.toISOString(),
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.join(',')),
+    ].join('\n');
+
+    return csvContent;
+  }
+
+  private escapeCsvField(field: string): string {
+    if (!field) return '""';
+    const escaped = field.replace(/"/g, '""');
+    return `"${escaped}"`;
+  }
 }
