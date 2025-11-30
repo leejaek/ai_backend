@@ -1,4 +1,9 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -12,6 +17,8 @@ import { Chat } from './entities/chat.entity';
 
 @Injectable()
 export class ChatsService {
+  private readonly logger = new Logger(ChatsService.name);
+
   constructor(
     @InjectRepository(Chat)
     private chatsRepository: Repository<Chat>,
@@ -23,6 +30,7 @@ export class ChatsService {
     userId: string,
     createChatDto: CreateChatDto,
   ): Promise<{ chat: Chat; threadId: string }> {
+    const startTime = Date.now();
     const thread = await this.threadsService.findOrCreateActiveThread(userId);
     const threadId = thread.id;
 
@@ -46,9 +54,18 @@ export class ChatsService {
 
     messages.push({ role: 'user', content: createChatDto.question });
 
+    this.logger.log(
+      `AI 요청 시작 - userId: ${userId}, model: ${createChatDto.model || 'default'}, historyCount: ${previousChats.length}`,
+    );
+
     const response = await this.aiService.chatCompletion(messages, {
       model: createChatDto.model,
     });
+
+    const duration = Date.now() - startTime;
+    this.logger.log(
+      `AI 응답 완료 - userId: ${userId}, provider: ${response.provider}, duration: ${duration}ms`,
+    );
 
     const chat = this.chatsRepository.create({
       threadId,
@@ -67,6 +84,7 @@ export class ChatsService {
     userId: string,
     createChatDto: CreateChatDto,
   ): AsyncGenerator<{ event: string; data: string }, void, unknown> {
+    const startTime = Date.now();
     const thread = await this.threadsService.findOrCreateActiveThread(userId);
     const threadId = thread.id;
 
@@ -92,6 +110,10 @@ export class ChatsService {
 
     messages.push({ role: 'user', content: createChatDto.question });
 
+    this.logger.log(
+      `AI 스트림 요청 시작 - userId: ${userId}, model: ${createChatDto.model || 'default'}, historyCount: ${previousChats.length}`,
+    );
+
     let fullAnswer = '';
 
     const stream = this.aiService.chatCompletionStream(messages, {
@@ -102,6 +124,11 @@ export class ChatsService {
       fullAnswer += chunk;
       yield { event: 'message', data: chunk };
     }
+
+    const duration = Date.now() - startTime;
+    this.logger.log(
+      `AI 스트림 완료 - userId: ${userId}, duration: ${duration}ms`,
+    );
 
     const chat = this.chatsRepository.create({
       threadId,

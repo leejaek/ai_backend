@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
   ConflictException,
@@ -18,6 +19,8 @@ import { UserRole } from '../users/entities/user.entity';
 
 @Injectable()
 export class FeedbacksService {
+  private readonly logger = new Logger(FeedbacksService.name);
+
   constructor(
     @InjectRepository(Feedback)
     private feedbacksRepository: Repository<Feedback>,
@@ -129,7 +132,14 @@ export class FeedbacksService {
       throw new NotFoundException('피드백을 찾을 수 없습니다.');
     }
 
+    const oldStatus = feedback.status;
     feedback.status = status;
-    return this.feedbacksRepository.save(feedback);
+    const updated = await this.feedbacksRepository.save(feedback);
+
+    this.logger.log(
+      `피드백 상태 변경 - feedbackId: ${id}, ${oldStatus} → ${status}`,
+    );
+
+    return updated;
   }
 }
