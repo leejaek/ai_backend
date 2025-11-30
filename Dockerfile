@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+ENV NODE_OPTIONS=--experimental-global-webcrypto
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./
