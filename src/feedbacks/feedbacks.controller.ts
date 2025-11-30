@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -10,7 +19,11 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { FeedbacksService } from './feedbacks.service';
-import { CreateFeedbackDto, GetFeedbacksDto } from './dto';
+import {
+  CreateFeedbackDto,
+  GetFeedbacksDto,
+  UpdateFeedbackStatusDto,
+} from './dto';
 import { User, UserRole } from '../users/entities/user.entity';
 
 @ApiTags('feedbacks')
@@ -48,5 +61,19 @@ export class FeedbacksController {
   @ApiResponse({ status: 409, description: '이미 피드백 작성됨' })
   async create(@CurrentUser() user: User, @Body() dto: CreateFeedbackDto) {
     return this.feedbacksService.create(user.id, user.role, dto);
+  }
+
+  @Patch(':id/status')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: '피드백 상태 변경 (관리자)' })
+  @ApiResponse({ status: 200, description: '상태 변경 성공' })
+  @ApiResponse({ status: 403, description: '관리자 권한 필요' })
+  @ApiResponse({ status: 404, description: '피드백을 찾을 수 없음' })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateFeedbackStatusDto,
+  ) {
+    return this.feedbacksService.updateStatus(id, dto.status);
   }
 }

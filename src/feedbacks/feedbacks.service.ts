@@ -10,7 +10,7 @@ import {
   PaginationMeta,
   SortOrder,
 } from '../common/dto/pagination.dto';
-import { Feedback } from './entities/feedback.entity';
+import { Feedback, FeedbackStatus } from './entities/feedback.entity';
 import { CreateFeedbackDto, GetFeedbacksDto } from './dto';
 import { ChatsService } from '../chats/chats.service';
 import { ThreadsService } from '../threads/threads.service';
@@ -120,5 +120,16 @@ export class FeedbacksService {
       data,
       meta: new PaginationMeta(page, limit, total),
     };
+  }
+
+  async updateStatus(id: string, status: FeedbackStatus): Promise<Feedback> {
+    const feedback = await this.feedbacksRepository.findOne({ where: { id } });
+
+    if (!feedback) {
+      throw new NotFoundException('피드백을 찾을 수 없습니다.');
+    }
+
+    feedback.status = status;
+    return this.feedbacksRepository.save(feedback);
   }
 }
