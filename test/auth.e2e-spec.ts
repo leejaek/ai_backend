@@ -214,7 +214,7 @@ describe('AuthController (e2e)', () => {
 
       // login 응답은 이미 { data: { accessToken } } 형식이므로
       // TransformInterceptor가 적용되면 { data: { data: { accessToken } } }
-      const tokenData = response.body.data.data || response.body.data;
+      const tokenData = response.body.data;
       expect(tokenData).toHaveProperty('accessToken');
       expect(typeof tokenData.accessToken).toBe('string');
       expect(tokenData.accessToken.split('.')).toHaveLength(3);
