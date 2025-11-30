@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Thread } from '../../threads/entities/thread.entity';
 
 @Entity('chats')
+@Index(['threadId', 'createdAt'])
 export class Chat {
   @PrimaryGeneratedColumn('uuid')
   id: string;
