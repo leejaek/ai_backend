@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatsModule } from './chats/chats.module';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
+import { FeedbacksModule } from './feedbacks/feedbacks.module';
 import { ThreadsModule } from './threads/threads.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { ThreadsModule } from './threads/threads.module';
     ]),
     AuthModule,
     ChatsModule,
+    FeedbacksModule,
     ThreadsModule,
   ],
   controllers: [AppController],
