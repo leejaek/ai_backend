@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { FindOptionsWhere, MoreThan, Repository } from 'typeorm';
+import {
+  PaginationMeta,
+  SortOrder,
+} from '../common/dto/pagination.dto';
+import { GetThreadsDto } from './dto';
 import { Thread } from './entities/thread.entity';
 
 @Injectable()
@@ -69,5 +74,51 @@ export class ThreadsService {
 
   async delete(id: string): Promise<void> {
     await this.threadsRepository.delete(id);
+  }
+
+  async findByUserIdPaginated(
+    userId: string,
+    dto: GetThreadsDto,
+  ): Promise<{ data: Thread[]; meta: PaginationMeta }> {
+    const { page = 1, limit = 20, sort = SortOrder.DESC } = dto;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.threadsRepository.findAndCount({
+      where: { userId },
+      relations: ['chats'],
+      order: { createdAt: sort.toUpperCase() as 'ASC' | 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data,
+      meta: new PaginationMeta(page, limit, total),
+    };
+  }
+
+  async findAllPaginated(
+    dto: GetThreadsDto,
+  ): Promise<{ data: Thread[]; meta: PaginationMeta }> {
+    const { page = 1, limit = 20, sort = SortOrder.DESC, userId } = dto;
+    const skip = (page - 1) * limit;
+
+    const where: FindOptionsWhere<Thread> = {};
+    if (userId) {
+      where.userId = userId;
+    }
+
+    const [data, total] = await this.threadsRepository.findAndCount({
+      where,
+      relations: ['chats'],
+      order: { createdAt: sort.toUpperCase() as 'ASC' | 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data,
+      meta: new PaginationMeta(page, limit, total),
+    };
   }
 }
